@@ -1,0 +1,41 @@
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+strategy:
+  matrix:
+    os:
+      - ubuntu-24.04-arm
+      - ubuntu-24.04
+    toolchain:
+      - stable
+      - beta
+      - nightly
+
+jobs:
+  build:
+    name: build ${{ matrix.os }} - ${{ matrix.toolchain }}
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v5
+      - run: rustup update ${{ matrix.toolchain }}
+      - run: rustup default ${{ matrix.toolchain }}
+      - run: rustup component add clippy rustfmt
+      - name: Format
+        run: cargo fmt --check
+      - name: Clippy
+        run: cargo clippy
+      - name: Build
+        run: cargo build
+      - name: Run tests
+        run: cargo test -- --nocapture
