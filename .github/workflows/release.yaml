@@ -8,27 +8,27 @@ env:
 
 jobs:
   release:
-    name: release ${{ matrix.target }}
-
-    runs-on: ubuntu-latest
-
     strategy:
-      fail-fast: false
-
       matrix:
         include:
           - target: aarch64-unknown-linux-gnu
-            archive: tar.xz
+            os: ubuntu-24.04-arm
           - target: x86_64-unknown-linux-gnu
-            archive: tar.xz
+            os: ubuntu-latest
+
+      fail-fast: false
+
+    name: release ${{ matrix.target }}
+
+    runs-on: ${{ matrix.os }}
+
+    permissions:
+      contents: write
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Compile and release
-        uses: rust-build/rust-build.action@v1.4.5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: taiki-e/upload-rust-binary-action@v1
         with:
-          RUSTTARGET: ${{ matrix.target }}
-          ARCHIVE_TYPES: ${{ matrix.archive }}
-          MINIFY: "true"
+          bin: kyoshin-sensor-tui
+          target: ${{ matrix.target }}
